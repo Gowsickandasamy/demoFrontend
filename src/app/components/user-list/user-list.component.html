@@ -1,0 +1,41 @@
+<div class="container mt-4">
+  <h2>User List</h2>
+  <p *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</p>
+
+  <table class="table table-striped" *ngIf="users.length > 0; else noData">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Change Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users; let i = index">
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          <select [(ngModel)]="user.newRole">
+            <option value="Admin">Admin</option>
+            <option value="User">User</option>
+            <option value="Trainer">Trainer</option>
+          </select>
+          <button
+            class="btn btn-primary ml-2"
+            (click)="changeUserRole(user.id, user.newRole)"
+            [disabled]="user.role === user.newRole"
+          >
+            Change Role
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #noData>
+    <p>No users found.</p>
+  </ng-template>
+</div>
+

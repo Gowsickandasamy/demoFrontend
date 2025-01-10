@@ -1,0 +1,20 @@
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card" style="width: 24rem;">
+        <div class="card-body">
+            <form (ngSubmit)="onSubmit()">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control form-control-sm" id="username" [(ngModel)]="loginData.username"
+                        name="username" required>
+                </div>
+                <div class="mb-1">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control form-control-sm" id="password" [(ngModel)]="loginData.password"
+                        name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <p *ngIf="errorMessage" class="error mt-3 text-danger">{{ errorMessage }}</p>
+        </div>
+    </div>
+</div>
