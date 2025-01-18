@@ -14,36 +14,62 @@ export class SignalrService {
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
   
+
   constructor(private toastr:ToastrService, private userService:UserService){}
 
   public startConnection=(userId:number) =>{
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://192.168.197.81:5296/notify?userId=${userId}`,{ 
+      .withUrl(`http://192.168.197.81:5296/notify?userId=${userId}`,{
         skipNegotiation:true,
         transport:signalR.HttpTransportType.WebSockets})
         .build();
 
-    this.hubConnection
-    .start()
-    .then(()=>console.log('Connection started'))
-    .catch(err => console.log('Error while starting connection: '+err))
+        this.hubConnection
+        .start()
+        .then(() => {
+          console.log('Connection started');
+          const connectionId = this.hubConnection.connectionId;
+  
+          if (connectionId) {
+            this.updateConnectionId(connectionId);
+          }
+        })
+        .catch((err) => console.log('Error while starting connection: ' + err));
   }
  
   public addUserListener = () => {
     this.hubConnection.on('SendMessage', (notification: Notification) => {
-      console.log('Full Notification Object:', notification); // Log full object
-
+      console.log('Full Notification Object:', notification);
+  
       const { id, newRole } = notification;
-      
+  
+      // Update session storage if needed (only for the affected user)
       this.updateSessionStorage(id, newRole);
-
-      this.toastr.warning(notification.message || 'No message provided');
-      
-      const currentNotifications = this.notificationsSubject.value;
-      this.notificationsSubject.next([...currentNotifications, notification]);
-      this.userService.getAllUsers().subscribe();
+  
+      // Emit the new notification to all components subscribing to notifications
+      this.notificationsSubject.next([notification]); // This will update the table for all admins
+  
+      // Notify only the affected user
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (currentUser.id === id) {
+        this.toastr.warning(notification.message || 'Your role has been updated!');
+      }
     });
   };
+  
+
+  private updateConnectionId(connectionId: string) {
+    const sessionData = sessionStorage.getItem('user');
+
+    if (sessionData) {
+      const user = JSON.parse(sessionData);
+      user.connectionId = connectionId; // Add the ConnectionId to the user object
+      sessionStorage.setItem('user', JSON.stringify(user)); // Update session storage
+      console.log('ConnectionId updated in session storage:', connectionId);
+    } else {
+      console.warn('No user found in session storage to update ConnectionId.');
+    }
+  }
 
   private updateSessionStorage(id: number, newRole: string) {
     const sessionData = sessionStorage.getItem('user');
@@ -65,6 +91,7 @@ export class SignalrService {
     }
   }
 
+ 
   private forceNavigationCheck() {
     setTimeout(() => {
       console.log('Page is reloading...');

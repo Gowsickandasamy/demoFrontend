@@ -1,44 +1,68 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { SignalrService } from '../../services/signalr.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-list',
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css']
 })
-export class UserListComponent implements OnInit{
+export class UserListComponent implements OnInit, OnDestroy {
   users: { id: number; username: string; role: string; newRole: string }[] = [];
   errorMessage: string | null = null;
- 
+  private notificationSubscription!: Subscription;
+
   username!: string;
   userId!: number;
+  sessionId!: string;
 
-  constructor(private userService: UserService,private signalrService:SignalrService) {
-  }
+  constructor(
+    private userService: UserService,
+    private signalrService: SignalrService
+  ) {}
 
-  ngOnInit(): void {    
+  ngOnInit(): void {
     const user = sessionStorage.getItem('user');
     if (user) {
-      const parsedUser = JSON.parse(user); // Parse the JSON string into an object
-      this.username = parsedUser.username; // Extract the username
+      const parsedUser = JSON.parse(user);
+      this.username = parsedUser.username;
       this.userId = parsedUser.id;
+      this.sessionId = parsedUser.sessionId;
       this.signalrService.startConnection(this.userId);
       this.signalrService.addUserListener();
-    }
-    else {
+    } else {
       console.error('User is not found in session storage');
     }
-
+  
     this.loadUsers();
+  
+    // Subscribe to notifications for real-time updates
+    this.notificationSubscription = this.signalrService.notifications$.subscribe((notifications) => {
+      if (notifications && notifications.length > 0) {
+        const notification = notifications[0];
+  
+        // Update the table if the notification is for a role change
+        this.handleRoleChangeNotification(notification);
+      }
+    });
+  }
+  
+
+  ngOnDestroy(): void {
+    // Unsubscribe when the component is destroyed to prevent memory leaks
+    if (this.notificationSubscription) {
+      this.notificationSubscription.unsubscribe();
+    }
   }
 
-  selectedUser!:number;
+  selectedUser!: number;
+
   loadUsers(): void {
     this.userService.getAllUsers().subscribe(
       (data) => {
         console.log('Received users:', data);
-        this.users = data.map(user => ({
+        this.users = data.map((user) => ({
           ...user,
           newRole: user.role // Default role for dropdown
         }));
@@ -50,10 +74,18 @@ export class UserListComponent implements OnInit{
     );
   }
 
+  handleRoleChangeNotification(notification: any): void {
+    const updatedUser = this.users.find((user) => user.id === notification.id);
+    if (updatedUser) {
+      updatedUser.role = notification.newRole; // Update the user role
+      this.users = [...this.users]; // Trigger change detection
+    }
+  }
+  
 
   changeUserRole(userId: number, newRole: string): void {
     console.log(`Changing role for user ${userId} to ${newRole}`);
-    this.selectedUser=userId;
+    this.selectedUser = userId;
     this.signalrService.hubConnection
       .invoke('ChangeUserRole', userId, newRole) // Invoke SignalR method
       .then(() => {
@@ -68,6 +100,5 @@ export class UserListComponent implements OnInit{
         this.errorMessage =
           'Failed to update role. Please check your connection and try again.';
       });
-    }
+  }
 }
-

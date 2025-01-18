@@ -1,0 +1,19 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  thead th {
+    background-color: #343a40;
+    color: white;
+    text-align: center;
+  }
+  
+  tbody td {
+    text-align: center;
+  }
+  
+  .btn-danger {
+    font-size: 0.9rem;
+  }
+  

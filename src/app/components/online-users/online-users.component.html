@@ -1,0 +1,38 @@
+<div class="container mt-5">
+  <h2 class="mb-4">Online Users</h2>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+      <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Session ID</th>
+        <th>Device Info</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of onlineUsers">
+        <td>{{ user.userId }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.sessionId }}</td>
+        <td>{{ user.deviceInfo }}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" (click)="onNotify(user.sessionId)">
+            Terminate
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="onlineUsers.length === 0" class="text-center mt-4">
+    <p>No users are currently online.</p>
+  </div>
+</div>

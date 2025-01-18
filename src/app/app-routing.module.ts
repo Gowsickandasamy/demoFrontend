@@ -7,6 +7,7 @@ import { UserListComponent } from './components/user-list/user-list.component';
 import { adminGuard } from './guards/admin.guard';
 import { TrainingComponent } from './components/training/training.component';
 import { trainerGuard } from './guards/trainer.guard';
+import { OnlineUsersComponent } from './components/online-users/online-users.component';
 
 const routes: Routes = [
   { path:'', redirectTo:'/login', pathMatch:'full'},
@@ -14,7 +15,8 @@ const routes: Routes = [
   { path:'home', component:HomeComponent, canActivate: [authGuard]},
   { path: 'users', component:UserListComponent, canActivate: [authGuard, adminGuard] },
   { path :'training', component:TrainingComponent, canActivate: [authGuard,trainerGuard]},
-  { path: '**', redirectTo: '/login' }
+  { path: 'online-users', component: OnlineUsersComponent, canActivate: [authGuard, adminGuard] },
+  { path: '**', redirectTo: '/home' }
 ];
 
 @NgModule({

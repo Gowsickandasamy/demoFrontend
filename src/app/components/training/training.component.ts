@@ -12,6 +12,7 @@ export class TrainingComponent implements OnInit{
 
   username!: string;
   userId!: number;
+  sessionId!:string;
   ngOnInit(): void {
 
     const user = sessionStorage.getItem('user');
@@ -19,6 +20,7 @@ export class TrainingComponent implements OnInit{
       const parsedUser = JSON.parse(user); // Parse the JSON string into an object
       this.username = parsedUser.username; // Extract the username
       this.userId = parsedUser.id;
+      this.sessionId = parsedUser.sessionId;
       this.signalrService.startConnection(this.userId);
       this.signalrService.addUserListener();
     }

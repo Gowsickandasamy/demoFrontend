@@ -13,6 +13,7 @@ import { TrainingComponent } from './components/training/training.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { SignalrService } from './services/signalr.service';
+import { OnlineUsersComponent } from './components/online-users/online-users.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { SignalrService } from './services/signalr.service';
     LoginComponent,
     HomeComponent,
     UserListComponent,
-    TrainingComponent
+    TrainingComponent,
+    OnlineUsersComponent
   ],
   imports: [
     BrowserModule,
